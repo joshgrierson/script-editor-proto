@@ -1,0 +1,7 @@
+@import "./variables";
+
+.c-textbox {
+    display: block;
+    padding: 5px;
+    border: 1px solid $textbox-border-color;
+}

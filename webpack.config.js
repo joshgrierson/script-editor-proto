@@ -14,6 +14,18 @@ module.exports = {
         clientLogLevel: "error",
         hot: true
     },
+    module: {
+        rules: [
+            {
+                test: /\.scss$/i,
+                use: [
+                    "style-loader",
+                    "css-loader",
+                    "sass-loader"
+                ]
+            }
+        ]
+    },
     plugins: [new webpack.HotModuleReplacementPlugin(), new htmlWebpackPlugin({
         template: "./index.html",
         inject: "body",
