@@ -7,6 +7,11 @@ export default class Editor {
         };
         this._mountElement = document.createElement("div");
         this._nodeList = [];
+        this._eventTypes = {
+            KEYDOWN: "onkeydown",
+            KEYUP: "onkeyup"
+        };
+        this._registeredEvents = [];
 
         const optKeys = Object.keys(this._options);
 
@@ -20,7 +25,9 @@ export default class Editor {
 
         this._validateOptions();
 
-        this._textbox = new TextBox();
+        this._textbox = new TextBox({
+            eventTypes: this._eventTypes
+        });
     }
 
     mount(element) {
@@ -53,7 +60,16 @@ export default class Editor {
 
     // executed after mount
     _run() {
+        // init elements
+        this._textbox.init();
+
+        // register element event listeners
+        this._registerEventListeners();
+
+        // push elements to node list for rendering
         this._nodeList.push(this._textbox.render());
+
+        // flush nodes to dom
         this._flushNodes();
     }
 
@@ -69,6 +85,10 @@ export default class Editor {
         } else {
             console.warn("No new nodes to render");
         }
+    }
+
+    _registerEventListeners() {
+        this._textbox.registerEvents();
     }
 
     _validateOptions() {

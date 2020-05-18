@@ -3,5 +3,10 @@
 .c-textbox {
     display: block;
     padding: 5px;
+    min-height: 500px;
     border: 1px solid $textbox-border-color;
+
+    &__l-list {
+        margin: 5px 0px;
+    }
 }
