@@ -1,4 +1,5 @@
 import TextBox from "./textbox";
+import Topics from "./topics";
 
 export default class Editor {
     constructor(options) {
@@ -6,12 +7,15 @@ export default class Editor {
             testOpt: "__test"
         };
         this._mountElement = document.createElement("div");
-        this._nodeList = [];
         this._eventTypes = {
             KEYDOWN: "onkeydown",
-            KEYUP: "onkeyup"
+            KEYUP: "keyup"
         };
         this._registeredEvents = [];
+
+        this._nodeList = {}; // node map
+        this._nodeChanges = {}; // map of node uuids to timestamp
+        this._observables = {};
 
         const optKeys = Object.keys(this._options);
 
@@ -27,7 +31,7 @@ export default class Editor {
 
         this._textbox = new TextBox({
             eventTypes: this._eventTypes
-        });
+        }, this._observables);
     }
 
     mount(element) {
@@ -45,6 +49,8 @@ export default class Editor {
             } else {
                 throw new Error(`Element [${element}] not found.`);
             }
+
+            this._subscribe(Topics.onEditChange, this._handleEdit);
     
             document.addEventListener("DOMContentLoaded", () => this._run());
         } catch(err) {
@@ -67,24 +73,38 @@ export default class Editor {
         this._registerEventListeners();
 
         // push elements to node list for rendering
-        this._nodeList.push(this._textbox.render());
+        this._nodeList[this._textbox.UUID] = this._textbox.render();
+        this._nodeChanges[this._textbox.UUID] = Date.now();
 
         // flush nodes to dom
         this._flushNodes();
     }
 
     _flushNodes() {
-        if (this._nodeList.length > 0) {
-            let html = "";
+        const nodeListKeys = Object.keys(this._nodeList);
 
-            this._nodeList.forEach(node => {
-                html += node.outerHTML;    
-            });
-
-            this._mountElement.innerHTML = html;
+        if (nodeListKeys.length > 0) {
+            this._mountElement.append(...nodeListKeys.map(
+                (key) => this._nodeList[key]
+            ));
         } else {
             console.warn("No new nodes to render");
         }
+    }
+
+    _subscribe(topic, fn) {
+        if (!this._observables[topic]) {
+            this._observables[topic] = [];
+        }
+
+        this._observables[topic].push(fn);
+    }
+
+    /**
+     * Handles text edit
+     */
+    _handleEdit(data) {
+        console.log("Event[Text Edit]", data);
     }
 
     _registerEventListeners() {
