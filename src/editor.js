@@ -12,9 +12,6 @@ export default class Editor {
             KEYUP: "keyup"
         };
         this._registeredEvents = [];
-
-        this._nodeList = {}; // node map
-        this._nodeChanges = {}; // map of node uuids to timestamp
         this._observables = {};
 
         const optKeys = Object.keys(this._options);
@@ -66,30 +63,14 @@ export default class Editor {
 
     // executed after mount
     _run() {
-        // init elements
-        this._textbox.init();
-
         // register element event listeners
         this._registerEventListeners();
-
-        // push elements to node list for rendering
-        this._nodeList[this._textbox.UUID] = this._textbox.render();
-        this._nodeChanges[this._textbox.UUID] = Date.now();
 
         // flush nodes to dom
         this._flushNodes();
     }
 
     _flushNodes() {
-        const nodeListKeys = Object.keys(this._nodeList);
-
-        if (nodeListKeys.length > 0) {
-            this._mountElement.append(...nodeListKeys.map(
-                (key) => this._nodeList[key]
-            ));
-        } else {
-            console.warn("No new nodes to render");
-        }
     }
 
     _subscribe(topic, fn) {

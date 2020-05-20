@@ -1,8 +1,33 @@
+import { VNode } from "./VNode";
+import h from "hyperscript";
+
 export default class ElementAbstract {
     constructor(namespace, observables) {
         this.namespace = namespace;
         this._observables = observables;
         this.registeredEvents = {};
+    }
+
+    createVNode(vNode) {
+        const {
+            nodeName,
+            attrs,
+            text,
+            childNode
+        } = vNode;
+
+        return VNode(nodeName, attrs, text, childNode);
+    }
+
+    createElement(element) {
+        const {
+            type,
+            attrs,
+            text,
+            children
+        } = element;
+
+        return text ? h(type, attrs, text, ...children) : h(type, attrs, ...children);
     }
 
     registerEvent(element, event, fn) {
