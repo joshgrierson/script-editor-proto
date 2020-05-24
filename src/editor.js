@@ -63,7 +63,9 @@ export default class Editor {
 
     // executed after mount
     _run() {
-        this._observer.subscribe(Topics.onEditFocus, this._handleEditFocus);
+        this._observer
+            .subscribe(Topics.onEditFocus, this._handleEditFocus);
+
         this._initialTree();
 
         // register element event listeners
