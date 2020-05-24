@@ -6,7 +6,8 @@
     min-height: 500px;
     border: 1px solid $textbox-border-color;
 
-    &__l-list {
+    &__list {
+        min-height: 1.3em;
         margin: 5px 0px;
     }
 }
