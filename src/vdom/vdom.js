@@ -1,4 +1,4 @@
-export default function createElement(vNode) {
+export default function createElement(vNode, observable) {
     if (typeof vNode === "string") {
         return document.createElement(vNode);
     }
@@ -11,9 +11,21 @@ export default function createElement(vNode) {
         }
     }
 
+    if (vNode.eventType) {
+        registerEventHandler($el, vNode.eventType, observable);
+    }
+
     vNode.children.forEach(function(vChildNode) {
-        $el.appendChild(createElement(vChildNode));
+        $el.appendChild(createElement(vChildNode, observable));
     });
 
     return $el;
+}
+
+export function registerEventHandler($node, eventType, observable) {
+    if ($node && observable) {
+        $node.addEventListener(eventType, function(ev) {
+            observable.forEach((fn) => fn.call(null, ev.currentTarget));
+        });
+    }
 }

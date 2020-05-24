@@ -5,7 +5,8 @@ export default class VNode {
         const {
             nodeName,
             attrs,
-            text
+            text,
+            eventType
         } = config;
 
         this._nodeMap = {
@@ -13,6 +14,7 @@ export default class VNode {
             nodeName,
             attrs,
             text,
+            eventType,
             children: []
         };
     }

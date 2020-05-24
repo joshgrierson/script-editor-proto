@@ -14,7 +14,8 @@ export default class TextBox extends ElementAbstract {
                 class: "c-textbox",
                 contenteditable: true,
                 nodeKey: "editor-container"
-            }
+            },
+            eventType: "focus"
         });
 
         this._buildVNodes();
@@ -28,6 +29,10 @@ export default class TextBox extends ElementAbstract {
                 nodeKey: "editor-list"
             }
         }).vNode());
+    }
+
+    getTopic() {
+        return this._props.eventTopic;
     }
 
     getVNode() {

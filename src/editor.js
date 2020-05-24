@@ -1,5 +1,6 @@
 import TextBox from "./textbox";
 import Topics from "./topics";
+import Observer from "./observer";
 import createElement from "./vdom/vdom";
 import diffTree from "./vdom/vtree";
 
@@ -14,7 +15,7 @@ export default class Editor {
             KEYUP: "keyup"
         };
         this._registeredEvents = [];
-        this._observables = {};
+        this._observer = new Observer();
 
         const optKeys = Object.keys(this._options);
 
@@ -47,8 +48,6 @@ export default class Editor {
             } else {
                 throw new Error(`Element [${element}] not found.`);
             }
-
-            this._subscribe(Topics.onEditChange, this._handleEdit);
     
             document.addEventListener("DOMContentLoaded", () => this._run());
         } catch(err) {
@@ -64,6 +63,7 @@ export default class Editor {
 
     // executed after mount
     _run() {
+        this._observer.subscribe(Topics.onEditFocus, this._handleEditFocus);
         this._initialTree();
 
         // register element event listeners
@@ -75,12 +75,17 @@ export default class Editor {
 
     _initialTree() {
         this._vTree = [new TextBox({
-            eventTypes: this._eventTypes
-        }).getVNode()];
+            eventTopic: Topics.onEditFocus
+        })];
 
-        this._vTree.forEach((vNode) => {
+        this._vTree.forEach((comp) => {
             this._patches.push(($node) => {
-                $node.appendChild(createElement(vNode));
+                $node.appendChild(
+                    createElement(
+                        comp.getVNode(),
+                        this._observer.getObservers([comp.getTopic()])
+                    )
+                );
                 return $node;
             });
         });
@@ -92,12 +97,8 @@ export default class Editor {
         });
     }
 
-    _subscribe(topic, fn) {
-        if (!this._observables[topic]) {
-            this._observables[topic] = [];
-        }
-
-        this._observables[topic].push(fn);
+    _handleEditFocus(data) {
+        console.log(Topics.onEditFocus, data);
     }
 
     /**
