@@ -1,16 +1,14 @@
+import VNode from "./vdom/vnode";
 import ElementAbstract from "./element";
-import Topics from "./topics";
 import "./styles/_textbox.scss";
 
 export default class TextBox extends ElementAbstract {
-    constructor(props, observables, vTree) {
-        super("textbox", observables);
+    constructor(props) {
+        super("textbox");
 
         this._props = props;
-        this._vTree = vTree;
-        this._observables = observables;
 
-        this._vNode = this.createVNode({
+        this._vNode = new VNode({
             nodeName: "div",
             attrs: {
                 class: "c-textbox",
@@ -18,13 +16,21 @@ export default class TextBox extends ElementAbstract {
                 nodeKey: "editor-container"
             }
         });
+
+        this._buildVNodes();
     }
 
-    registerEvents() {
-        // this.registerEvent(
-        //     this._rootElement,
-        //     this._props.eventTypes.KEYUP,
-        //     (ev) => this.notifySubscribers(Topics.onEditChange, ev)
-        // );
+    _buildVNodes() {
+        this._vNode.addChildNode(new VNode({
+            nodeName: "ol",
+            attrs: {
+                class: "c-textbox__list",
+                nodeKey: "editor-list"
+            }
+        }).vNode());
+    }
+
+    getVNode() {
+        return this._vNode.vNode();
     }
 }

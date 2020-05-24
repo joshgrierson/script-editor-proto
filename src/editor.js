@@ -1,5 +1,7 @@
 import TextBox from "./textbox";
 import Topics from "./topics";
+import createElement from "./vdom/vdom";
+import diffTree from "./vdom/vtree";
 
 export default class Editor {
     constructor(options) {
@@ -26,9 +28,8 @@ export default class Editor {
 
         this._validateOptions();
 
-        this._textbox = new TextBox({
-            eventTypes: this._eventTypes
-        }, this._observables);
+        this._vTree = [];
+        this._patches = [];
     }
 
     mount(element) {
@@ -63,14 +64,32 @@ export default class Editor {
 
     // executed after mount
     _run() {
+        this._initialTree();
+
         // register element event listeners
-        this._registerEventListeners();
+        // this._registerEventListeners();
 
         // flush nodes to dom
         this._flushNodes();
     }
 
+    _initialTree() {
+        this._vTree = [new TextBox({
+            eventTypes: this._eventTypes
+        }).getVNode()];
+
+        this._vTree.forEach((vNode) => {
+            this._patches.push(($node) => {
+                $node.appendChild(createElement(vNode));
+                return $node;
+            });
+        });
+    }
+
     _flushNodes() {
+        this._patches.forEach((patchFn) => {
+            patchFn(this._mountElement);
+        });
     }
 
     _subscribe(topic, fn) {
