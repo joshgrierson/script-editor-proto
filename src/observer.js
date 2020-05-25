@@ -29,4 +29,16 @@ export default class Observer {
     getObservers(topic) {
         return this._observables[topic];
     }
+
+    groupObservables(topics) {
+        const groups = [];
+
+        topics.forEach((topic) => {
+            if (this._observables[topic]) {
+                groups.push(this._observables[topic]);
+            }
+        });
+
+        return groups;
+    }
 }

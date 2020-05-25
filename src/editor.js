@@ -2,7 +2,8 @@ import TextBox from "./textbox";
 import Topics from "./topics";
 import Observer from "./observer";
 import createElement from "./vdom/vdom";
-import diffTree from "./vdom/vtree";
+import diffTree, { isTextEmpty } from "./vdom/vtree";
+import VNode from "./vdom/vnode";
 
 export default class Editor {
     constructor(options) {
@@ -21,7 +22,7 @@ export default class Editor {
         };
         this._registeredEvents = [];
 
-        this._vTree = [];
+        this._vTree = {};
         this._patches = [];
     }
 
@@ -55,44 +56,55 @@ export default class Editor {
 
     // executed after mount
     _run() {
-        this._observer
-            .subscribe(Topics.onEditFocus, this._handleEditFocus);
-
         this._initialTree();
-
-        // register element event listeners
-        // this._registerEventListeners();
+        this._subscribeToTopics();
 
         // flush nodes to dom
         this._flushNodes();
     }
 
     _initialTree() {
-        this._vTree = [new TextBox({
-            eventTopic: Topics.onEditFocus
-        })];
+        this._vTree = new TextBox({
+            topics: [
+                Topics.onEditFocus,
+                Topics.onEditChange
+            ]
+        }).getVNode();
 
-        this._vTree.forEach((comp) => {
-            this._patches.push(($node) => {
-                $node.appendChild(
-                    createElement(
-                        comp.getVNode(),
-                        this._observer.getObservers([comp.getTopic()])
+        this._patches.push(($node) => {
+            $node.appendChild(
+                createElement(
+                    this._vTree,
+                    this._observer.groupObservables(
+                        this._vTree.topics
                     )
-                );
-                return $node;
-            });
+                )
+            );
+            return $node;
         });
     }
 
     _flushNodes() {
         this._patches.forEach((patchFn) => {
             patchFn(this._mountElement);
+
+            /**
+             * We have patched the dom,
+             * we can now dispose of the patch from memory
+             */
+            this._patches.splice(
+                this._patches.indexOf(patchFn, 1)
+            );
         });
     }
 
-    _handleEditFocus(data) {
-        console.log(Topics.onEditFocus, data);
+    _handleEditFocus(element) {
+        console.log("Patches empty", this._patches);
+        const newTree = [];
+
+        if (isTextEmpty(this._vTree)) {
+            console.log("Script is empty");
+        }
     }
 
     /**
@@ -102,8 +114,11 @@ export default class Editor {
         console.log("Event[Text Edit]", data);
     }
 
-    _registerEventListeners() {
-        this._textbox.registerEvents();
+    _subscribeToTopics() {
+        this._observer.subscribe(
+            Topics.onEditFocus,
+            this._handleEditFocus.bind(this)
+        );
     }
 
     _handleLogMessage({ type, msg }) {

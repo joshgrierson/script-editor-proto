@@ -6,7 +6,8 @@ export default class VNode {
             nodeName,
             attrs,
             text,
-            eventType
+            nativeEvents,
+            topics
         } = config;
 
         this._nodeMap = {
@@ -14,7 +15,8 @@ export default class VNode {
             nodeName,
             attrs,
             text,
-            eventType,
+            nativeEvents,
+            topics,
             children: []
         };
     }

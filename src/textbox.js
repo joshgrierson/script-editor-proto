@@ -15,24 +15,28 @@ export default class TextBox extends ElementAbstract {
                 contenteditable: true,
                 nodeKey: "editor-container"
             },
-            eventType: "focus"
+            nativeEvents: ["focus", "keydown"],
+            topics: this._props.topics
         });
 
         this._buildVNodes();
     }
 
     _buildVNodes() {
-        this._vNode.addChildNode(new VNode({
+        const ol = new VNode({
             nodeName: "ol",
             attrs: {
                 class: "c-textbox__list",
                 nodeKey: "editor-list"
             }
-        }).vNode());
-    }
+        });
 
-    getTopic() {
-        return this._props.eventTopic;
+        ol.addChildNode(new VNode({
+            nodeName: "li",
+            text: "Hello"
+        }).vNode());
+
+        this._vNode.addChildNode(ol.vNode());
     }
 
     getVNode() {

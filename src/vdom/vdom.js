@@ -1,4 +1,4 @@
-export default function createElement(vNode, observable) {
+export default function createElement(vNode, observables) {
     if (typeof vNode === "string") {
         return document.createElement(vNode);
     }
@@ -11,21 +11,25 @@ export default function createElement(vNode, observable) {
         }
     }
 
-    if (vNode.eventType) {
-        registerEventHandler($el, vNode.eventType, observable);
+    if (vNode.nativeEvents && vNode.nativeEvents.length > 0) {
+        vNode.nativeEvents.forEach(function(event) {
+            registerEventHandler($el, event, observables);
+        });
     }
 
     vNode.children.forEach(function(vChildNode) {
-        $el.appendChild(createElement(vChildNode, observable));
+        $el.appendChild(createElement(vChildNode, observables));
     });
 
     return $el;
 }
 
-export function registerEventHandler($node, eventType, observable) {
-    if ($node && observable) {
-        $node.addEventListener(eventType, function(ev) {
-            observable.forEach((fn) => fn.call(null, ev.currentTarget));
+export function registerEventHandler($node, nativeEvent, observables) {
+    if ($node && observables) {
+        $node.addEventListener(nativeEvent, function(ev) {
+            observables.forEach(function(observer) {
+                observer.forEach((fn) => fn.call(null, ev.currentTarget));
+            });
         });
     }
 }
