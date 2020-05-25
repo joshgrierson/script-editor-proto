@@ -6,28 +6,20 @@ import diffTree from "./vdom/vtree";
 
 export default class Editor {
     constructor(options) {
+        this._TAG = "Script Editor v1";
         this._options = {
             testOpt: "__test"
         };
+
+        this._observer = new Observer();
+        this._validateOptions(options);
+
         this._mountElement = document.createElement("div");
         this._eventTypes = {
             KEYDOWN: "onkeydown",
             KEYUP: "keyup"
         };
         this._registeredEvents = [];
-        this._observer = new Observer();
-
-        const optKeys = Object.keys(this._options);
-
-        if (options) {
-            optKeys.forEach((key) => {
-                if (options[key]) {
-                    this._options[key] = options[key];
-                }
-            });
-        }
-
-        this._validateOptions();
 
         this._vTree = [];
         this._patches = [];
@@ -114,7 +106,32 @@ export default class Editor {
         this._textbox.registerEvents();
     }
 
-    _validateOptions() {
-        console.log(this._options);
+    _handleLogMessage({ type, msg }) {
+        console[type](`[${this._TAG}]`, msg);
+    }
+
+    _validateOptions(options) {
+        const optKeys = Object.keys(this._options);
+
+        this._observer.subscribe(Topics.onLogMessage, this._handleLogMessage.bind(this));
+
+        if (options) {
+            const invalidOption = [];
+
+            optKeys.forEach((key) => {
+                if (options[key]) {
+                    this._options[key] = options[key];
+                } else {
+                    invalidOption.push(key);
+                }
+            });
+
+            if (invalidOption[0]) {
+                this._observer.notify(Topics.onLogMessage, {
+                    type: "warn",
+                    msg: `Invalid options: [${invalidOption.join()}]`
+                });
+            }
+        }
     }
 }

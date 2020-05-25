@@ -3,11 +3,12 @@
 .c-textbox {
     display: block;
     padding: 5px;
-    min-height: 500px;
+    min-height: 50vh;
     border: 1px solid $textbox-border-color;
 
     &__list {
         min-height: 1.3em;
         margin: 5px 0px;
+        padding-inline-start: 50px;
     }
 }
