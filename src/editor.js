@@ -3,7 +3,6 @@ import Topics from "./topics";
 import Observer from "./observer";
 import createElement from "./vdom/vdom";
 import diffTree, { isTextEmpty } from "./vdom/vtree";
-import VNode from "./vdom/vnode";
 
 export default class Editor {
     constructor(options) {
@@ -24,27 +23,34 @@ export default class Editor {
 
         this._vTree = {};
         this._patches = [];
+        this._route = [];
+        this._nodeIndex = 0;
     }
 
     mount(element) {
         try {
-            if (typeof element === "string") {
-                const targetElement = document.querySelector(element);
-    
-                if (targetElement) {
-                    this._mountElement = targetElement;
+            document.addEventListener("DOMContentLoaded", () => {
+                if (typeof element === "string") {
+                    const targetElement = document.querySelector(element);
+        
+                    if (targetElement) {
+                        this._mountElement = targetElement;
+                    } else {
+                        throw new Error(`Element [${element}] not found.`);
+                    }
+                } else if (element) {
+                    this._mountElement = element;
                 } else {
                     throw new Error(`Element [${element}] not found.`);
                 }
-            } else if (element) {
-                this._mountElement = element;
-            } else {
-                throw new Error(`Element [${element}] not found.`);
-            }
-    
-            document.addEventListener("DOMContentLoaded", () => this._run());
+
+                this._run();
+            });
         } catch(err) {
-            console.error(err);
+            this._handleLogMessage({
+                type: "error",
+                msg: err
+            });
         }
     }
 
@@ -69,7 +75,7 @@ export default class Editor {
                 Topics.onEditFocus,
                 Topics.onEditChange
             ]
-        }).getVNode();
+        }, this._nodeIndex, this._route).getVNode();
 
         this._patches.push(($node) => {
             $node.appendChild(
@@ -102,7 +108,7 @@ export default class Editor {
         console.log("Patches empty", this._patches);
         const newTree = [];
 
-        if (isTextEmpty(this._vTree)) {
+        if (this._route.length == 0) {
             console.log("Script is empty");
         }
     }

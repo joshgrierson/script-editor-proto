@@ -1,7 +1,7 @@
 import { genUuid } from "../utils";
 
 export default class VNode {
-    constructor(config) {
+    constructor(config, nodeIndex, route) {
         const {
             nodeName,
             attrs,
@@ -19,6 +19,12 @@ export default class VNode {
             topics,
             children: []
         };
+
+        if (text && nodeIndex && route) {
+            route.push(nodeIndex);
+        }
+
+        nodeIndex += 0;
     }
 
     vNode() {
