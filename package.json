@@ -9,7 +9,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "hyperscript": "^2.0.2"
+    "hyperscript": "^2.0.2",
+    "typedi": "^0.8.0"
   },
   "devDependencies": {
     "css-loader": "^3.5.3",

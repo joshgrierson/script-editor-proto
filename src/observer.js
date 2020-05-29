@@ -31,11 +31,11 @@ export default class Observer {
     }
 
     groupObservables(topics) {
-        const groups = [];
+        const groups = {};
 
-        topics.forEach((topic) => {
+        Object.values(topics).forEach((topic) => {
             if (this._observables[topic]) {
-                groups.push(this._observables[topic]);
+                groups[topic] = this._observables[topic];
             }
         });
 

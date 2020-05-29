@@ -1,5 +1,6 @@
 export default {
     onLogMessage: "onLogMessage",
     onEditFocus: "onEditFocus",
-    onEditChange: "onEditChange"
+    onEditChange: "onEditChange",
+    buildTextRoute: "buildTextRoute"
 };

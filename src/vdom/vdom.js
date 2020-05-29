@@ -1,19 +1,27 @@
 export default function createElement(vNode, observables) {
     if (typeof vNode === "string") {
-        return document.createElement(vNode);
+        return document.createTextNode(vNode);
     }
 
     const $el = document.createElement(vNode.nodeName);
 
     if (vNode.attrs) {
         for(const attr in vNode.attrs) {
-            $el.setAttribute(attr, vNode.attrs[attr]);
+            $el.setAttribute(
+                attr.startsWith("data") ? `data-${attr.replace("data", "")}` : attr,
+                vNode.attrs[attr]
+            );
         }
+
+        $el.setAttribute("data-node-uid", vNode.id);
     }
 
-    if (vNode.nativeEvents && vNode.nativeEvents.length > 0) {
+    if (vNode.nativeEvents && vNode.topics && observables) {
         vNode.nativeEvents.forEach(function(event) {
-            registerEventHandler($el, event, observables);
+            registerEventHandler($el, event, observables[
+                    vNode.topics[event]
+                ]
+            );
         });
     }
 
@@ -24,12 +32,10 @@ export default function createElement(vNode, observables) {
     return $el;
 }
 
-export function registerEventHandler($node, nativeEvent, observables) {
-    if ($node && observables) {
+export function registerEventHandler($node, nativeEvent, observers) {
+    if ($node && observers) {
         $node.addEventListener(nativeEvent, function(ev) {
-            observables.forEach(function(observer) {
-                observer.forEach((fn) => fn.call(null, ev.currentTarget));
-            });
+            observers.forEach((fn) => fn.call(null, ev));
         });
     }
 }

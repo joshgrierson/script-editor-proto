@@ -1,45 +1,57 @@
 import VNode from "./vdom/vnode";
-import ElementAbstract from "./element";
 import "./styles/_textbox.scss";
 
-export default class TextBox extends ElementAbstract {
+export default class TextBox {
     constructor(props) {
-        super("textbox");
-
         this._props = props;
+        this._routes = {};
+        
+        this._buildVNodes();
+    }
 
-        this._vNode = new VNode({
+    _rootVNode() {
+        return new VNode({
             nodeName: "div",
             attrs: {
                 class: "c-textbox",
                 contenteditable: true,
-                nodeKey: "editor-container"
+                dataNodeKey: "editor-container"
             },
-            nativeEvents: ["focus", "keydown"],
+            nativeEvents: Object.keys(this._props.topics),
             topics: this._props.topics
         });
-
-        this._buildVNodes();
     }
 
     _buildVNodes() {
+        this._root = this._rootVNode();
         const ol = new VNode({
             nodeName: "ol",
             attrs: {
                 class: "c-textbox__list",
-                nodeKey: "editor-list"
+                dataNodeKey: "editor-list"
             }
         });
 
-        ol.addChildNode(new VNode({
+        const li = new VNode({
             nodeName: "li",
-            text: "Hello"
-        }).vNode());
+            attrs: {
+                dataNodeKey: "editor-list-line"
+            }
+        }).vNode();
+        
+        ol.addChildNode(li);
 
-        this._vNode.addChildNode(ol.vNode());
+        this._routes[li.id] = li;
+        this._root.addChildNode(ol.vNode());
     }
 
-    getVNode() {
-        return this._vNode.vNode();
+    updateText(newText, uid) {
+        if (!uid) {
+            
+        }
+    }
+
+    vNode() {
+        return this._root.vNode();
     }
 }

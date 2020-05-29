@@ -1,11 +1,12 @@
 import { genUuid } from "../utils";
+import Topics from "../topics";
+import Container from "typedi";
 
 export default class VNode {
-    constructor(config, nodeIndex, route) {
+    constructor(config) {
         const {
             nodeName,
             attrs,
-            text,
             nativeEvents,
             topics
         } = config;
@@ -14,17 +15,10 @@ export default class VNode {
             id: genUuid(),
             nodeName,
             attrs,
-            text,
             nativeEvents,
             topics,
             children: []
         };
-
-        if (text && nodeIndex && route) {
-            route.push(nodeIndex);
-        }
-
-        nodeIndex += 0;
     }
 
     vNode() {

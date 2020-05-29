@@ -2,7 +2,8 @@ import TextBox from "./textbox";
 import Topics from "./topics";
 import Observer from "./observer";
 import createElement from "./vdom/vdom";
-import diffTree, { isTextEmpty } from "./vdom/vtree";
+import diffTree, { findTextNode } from "./vdom/vtree";
+import Container from "typedi";
 
 export default class Editor {
     constructor(options) {
@@ -11,20 +12,22 @@ export default class Editor {
             testOpt: "__test"
         };
 
-        this._observer = new Observer();
+        Container.set("editor.observer", new Observer());
+
+        this._observer = Container.get("editor.observer");
         this._validateOptions(options);
 
         this._mountElement = document.createElement("div");
-        this._eventTypes = {
-            KEYDOWN: "onkeydown",
-            KEYUP: "keyup"
+        this._eventTopicMap = {
+            "focus": Topics.onEditFocus,
+            "click": Topics.onEditFocus,
+            "keydown": Topics.onEditChange
         };
-        this._registeredEvents = [];
 
         this._vTree = {};
         this._patches = [];
         this._route = [];
-        this._nodeIndex = 0;
+        this._focusedElement;
     }
 
     mount(element) {
@@ -62,8 +65,8 @@ export default class Editor {
 
     // executed after mount
     _run() {
-        this._initialTree();
         this._subscribeToTopics();
+        this._initialTree();
 
         // flush nodes to dom
         this._flushNodes();
@@ -71,18 +74,15 @@ export default class Editor {
 
     _initialTree() {
         this._vTree = new TextBox({
-            topics: [
-                Topics.onEditFocus,
-                Topics.onEditChange
-            ]
-        }, this._nodeIndex, this._route).getVNode();
+            topics: this._eventTopicMap
+        });
 
         this._patches.push(($node) => {
             $node.appendChild(
                 createElement(
-                    this._vTree,
+                    this._vTree.vNode(),
                     this._observer.groupObservables(
-                        this._vTree.topics
+                        this._eventTopicMap
                     )
                 )
             );
@@ -104,26 +104,43 @@ export default class Editor {
         });
     }
 
-    _handleEditFocus(element) {
+    /**
+     * Inoked on textbox focus
+     * @param {Event} event
+     */
+    _handleEditFocus(event) {
         console.log("Patches empty", this._patches);
-        const newTree = [];
 
-        if (this._route.length == 0) {
-            console.log("Script is empty");
+        const nodeKey = event.target.getAttribute("data-nodekey");
+        const textNode = findTextNode(this._vTree.vNode());
+
+        if (!textNode) {
+            console.log(this._focusedElement);
+        } else if (nodeKey && nodeKey == "editor-list-line") {
+            this._focusedElement = event.target;
         }
     }
 
-    /**
-     * Handles text edit
-     */
-    _handleEdit(data) {
-        console.log("Event[Text Edit]", data);
+    _handleEditChange(event) {
+        if (event.key === "Backspace") {
+        } else if (event.code.startsWith("Key")) {
+            const newTree = this._vTree;
+
+            newTree.updateText(event.key);
+
+            const patchFn = diffTree(newTree, this._vTree.vNode());
+        }
     }
 
     _subscribeToTopics() {
         this._observer.subscribe(
             Topics.onEditFocus,
             this._handleEditFocus.bind(this)
+        );
+
+        this._observer.subscribe(
+            Topics.onEditChange,
+            this._handleEditChange.bind(this)
         );
     }
 
