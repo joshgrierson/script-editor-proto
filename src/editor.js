@@ -2,8 +2,9 @@ import TextBox from "./textbox";
 import Topics from "./topics";
 import Observer from "./observer";
 import createElement from "./vdom/vdom";
-import diffTree, { findTextNode } from "./vdom/vtree";
+import diffTree from "./vdom/vtree";
 import Container from "typedi";
+import { deepClone } from "./utils";
 
 export default class Editor {
     constructor(options) {
@@ -20,13 +21,17 @@ export default class Editor {
         this._mountElement = document.createElement("div");
         this._eventTopicMap = {
             "focus": Topics.onEditFocus,
-            "click": Topics.onEditFocus,
+            "click": Topics.onClickEdit,
             "keydown": Topics.onEditChange
         };
 
         this._vTree = {};
+        this._vTreeSnapshot = {};
         this._patches = [];
-        this._route = [];
+        this._route = {};
+        this._data = {
+            route: {},
+        };
         this._focusedElement;
     }
 
@@ -66,6 +71,7 @@ export default class Editor {
     // executed after mount
     _run() {
         this._subscribeToTopics();
+        this._defineRoute(0); // define getters and setters on route
         this._initialTree();
 
         // flush nodes to dom
@@ -105,31 +111,58 @@ export default class Editor {
     }
 
     /**
-     * Inoked on textbox focus
+     * Invoked on textbox focus
      * @param {Event} event
      */
     _handleEditFocus(event) {
         console.log("Patches empty", this._patches);
 
         const nodeKey = event.target.getAttribute("data-nodekey");
-        const textNode = findTextNode(this._vTree.vNode());
 
-        if (!textNode) {
-            console.log(this._focusedElement);
-        } else if (nodeKey && nodeKey == "editor-list-line") {
-            this._focusedElement = event.target;
+        if (!Object.keys(this._route).length) {
+            this._route[0] = "Hello World";
         }
     }
+
+    /**
+     * Invoked on click textarea
+     * @param {Event} event
+     */
+    _handleClickEdit(event) {}
 
     _handleEditChange(event) {
         if (event.key === "Backspace") {
         } else if (event.code.startsWith("Key")) {
-            const newTree = this._vTree;
-
-            newTree.updateText(event.key);
-
-            const patchFn = diffTree(newTree, this._vTree.vNode());
         }
+    }
+
+    /**
+     * Invoked on route key setter
+     * @param {String} text 
+     */
+    _handleUpdateTree({ text, index }) {
+        console.log("State Change: %s at key %d", text, index);
+        const newTree = this._vTree;
+
+        this._vTreeSnapshot = deepClone(this._vTree.vNode());
+
+        newTree.addTextLine(text);
+
+        const patchFn = diffTree(newTree.vNode(), this._vTreeSnapshot);
+    }
+
+    _defineRoute(index) {
+        Object.defineProperty(this._route, index, {
+            get() {
+                return this._route[index];
+            },
+            set: (val) => {
+                this._observer.notify(Topics.stateChange, {
+                    text: val,
+                    index
+                });
+            }
+        });
     }
 
     _subscribeToTopics() {
@@ -141,6 +174,16 @@ export default class Editor {
         this._observer.subscribe(
             Topics.onEditChange,
             this._handleEditChange.bind(this)
+        );
+
+        this._observer.subscribe(
+            Topics.onClickEdit,
+            this._handleClickEdit.bind(this)
+        );
+
+        this._observer.subscribe(
+            Topics.stateChange,
+            this._handleUpdateTree.bind(this)
         );
     }
 

@@ -7,3 +7,7 @@ export function genUuid() {
         return r.toString(32);
     });
 }
+
+export function deepClone(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
