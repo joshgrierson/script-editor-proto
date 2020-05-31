@@ -28,10 +28,8 @@ export default class Editor {
         this._vTree = {};
         this._vTreeSnapshot = {};
         this._patches = [];
+        this._cache = {};
         this._route = {};
-        this._data = {
-            route: {},
-        };
         this._focusedElement;
     }
 
@@ -71,7 +69,7 @@ export default class Editor {
     // executed after mount
     _run() {
         this._subscribeToTopics();
-        this._defineRoute(0); // define getters and setters on route
+        this._defineRoute(0);
         this._initialTree();
 
         // flush nodes to dom
@@ -140,27 +138,31 @@ export default class Editor {
      * Invoked on route key setter
      * @param {String} text 
      */
-    _handleUpdateTree({ text, index }) {
-        console.log("State Change: %s at key %d", text, index);
+    _handleUpdateTree({ text, nodeIndex }) {
+        console.log("State Change: %s on line %d", text, nodeIndex);
         const newTree = this._vTree;
 
         this._vTreeSnapshot = deepClone(this._vTree.vNode());
 
         newTree.addTextLine(text);
 
-        const patchFn = diffTree(newTree.vNode(), this._vTreeSnapshot);
+        const patchFns = diffTree(newTree.vNode(), this._vTreeSnapshot, {
+            nodeIndex,
+            parentNode: "ol"
+        });
     }
 
     _defineRoute(index) {
         Object.defineProperty(this._route, index, {
-            get() {
-                return this._route[index];
+            get: () => {
+                return this._cache[index];
             },
             set: (val) => {
                 this._observer.notify(Topics.stateChange, {
                     text: val,
-                    index
+                    nodeIndex: index
                 });
+                this._cache[index] = val;
             }
         });
     }

@@ -1,8 +1,42 @@
 import createElement from "./vdom";
 
-export default function diffTree(newTree, oldTree) {
+function findNodeChildren(vTree, oldTree, nodeName, fn) {
+    if (vTree.nodeName == nodeName && oldTree.nodeName == nodeName) {
+
+        if (vTree.children.length) {
+            fn(vTree.children, oldTree.children);
+        }
+    } else if (vTree.children.length) {
+
+        for(let i = 0; i < vTree.children.length; i++) {
+            findNodeChildren(
+                vTree.children[i],
+                oldTree.children[i],
+                nodeName,
+                fn
+            );
+        }
+    }
+}
+
+export default function diffTree(newTree, oldTree, hint) {
+    const {
+        nodeIndex,
+        parentNode
+    } = hint;
+
+    findNodeChildren(newTree, oldTree, parentNode, (newNodes, oldNodes) => {
+        console.log(newNodes, oldNodes);
+    });
+
     if (!oldTree) {
-        return createElement(newTree);
+        return ($node) => {
+            $node.appendChild(
+                createElement(newTree)
+            );
+
+            return $node;
+        };
     }
 
     if (typeof newTree == "string" && typeof oldTree === "string") {
