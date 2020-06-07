@@ -8,16 +8,20 @@ export function genUuid() {
     });
 }
 
-export function findElement(query) {
-    const type = typeof query;
+export function findElement(query, $root) {
+    let found;
 
-    if (type == "string") {
-        return document.querySelector(query);
-    } else if (type == "object" && query.nodeName) {
-        return query;
+    if (typeof query == "string") {
+        if ($root) {
+            found = $root.querySelector(query);
+        } else {
+            found = document.querySelector(query);
+        }
+    } else {
+        found = query;
     }
 
-    return null;
+    return found;
 }
 
 export function log(msg, tag, type) {
