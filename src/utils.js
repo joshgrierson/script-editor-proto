@@ -26,13 +26,11 @@ export function findElement(query, $root) {
 
 export function log(msg, tag, type) {
     type = type || "info";
-    let msgString;
+    let msgString = msg;
 
     if (msg.stack) {
         type = "error";
-        msgString = msg.message;
-    } else {
-        msgString = msg;
+        msgString = msg.stack;
     }
 
     if (tag) {
@@ -44,6 +42,10 @@ export function log(msg, tag, type) {
 
 export function hyphenate(text) {
     return text.trim().replace(/([A-Z])/g, "-$1").toLowerCase();
+}
+
+export function isDev() {
+    return process.env.NODE_ENV !== "production";
 }
 
 export function deepClone(obj) {

@@ -1,6 +1,6 @@
 import { hyphenate } from "../utils";
 
-export function createElement(vNode) {
+export function createElement(vNode, eventMap) {
     if (typeof vNode == "string") {
         return document.createTextNode(vNode);
     }
@@ -27,5 +27,17 @@ export function createElement(vNode) {
         });
     }
 
+    if (vNode.nativeEvents && eventMap) {
+        registerEvents($el, vNode, eventMap);
+    }
+
     return $el;
+}
+
+function registerEvents($el, vNode, eventMap) {
+    vNode.nativeEvents.forEach(function(event) {
+        if (eventMap[event]) {
+            $el.addEventListener(event, (ev) => eventMap[event](vNode, ev));
+        }
+    });
 }

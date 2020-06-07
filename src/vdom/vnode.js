@@ -6,12 +6,25 @@ export default class VNode {
             id: genUuid(),
             nodeName: props.nodeName,
             attrs: props.attrs,
+            nativeEvents: [],
             children: []
         };
+
+        if (props.nativeEvents) {
+            this._props.nativeEvents = props.nativeEvents;
+        }
+    }
+
+    addEvent(event) {
+        if (!this._props.nativeEvents.includes(event)) {
+            this._props.nativeEvents.push(event);
+        }
     }
 
     addNode(vNode) {
-        this._props.children.push(vNode.node);
+        this._props.children.push(
+            typeof vNode == "string" ? vNode : vNode.node
+        );
         return this;
     }
 
