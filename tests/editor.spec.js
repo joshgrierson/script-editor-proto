@@ -1,9 +1,13 @@
-describe("Editor", () => {
-    it("should validate options successfully", (done) => {
-        done();
-    });
+import Editor from "../src/editor";
+import * as utils from "../src/utils";
 
-    it("validating options should FAIL", (done) => {
-        done();
+jest.mock("../src/utils");
+
+describe("Script editor mounting", () => {
+    it("should assign root element from selector string", () => {
+        const editor = new Editor();
+        editor.mount("#script-editor");
+
+        expect(utils.findElement).toHaveBeenCalledTimes(1);
     });
 });
