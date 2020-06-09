@@ -1,5 +1,5 @@
 import VNode from "./vdom/vnode";
-import patch from "./vdom/vpatch";
+import patch, { vTreeSnapshot } from "./vdom/vpatch";
 import defineReactive from "./observer/reactive";
 
 export default class TextArea {
@@ -58,7 +58,12 @@ export default class TextArea {
     }
 
     apply($root, isListNodes) {
-        const parentElement = isListNodes ? this.list.node : this.root.node;
+        const vTree = vTreeSnapshot(
+            isListNodes
+            ? this.list.node
+            : this.root.node
+        );
+
         const opts = {
             eventMap: this._eventMap
         };
@@ -70,6 +75,6 @@ export default class TextArea {
             };
         }
 
-        patch($root, parentElement, null, opts);
+        patch($root, vTree, null, opts);
     }
 }

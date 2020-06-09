@@ -65,9 +65,13 @@ export default class Editor {
      * Invoked on editor focus event
      * @param {VNode} vNode
      */
-    _handleEditorFocus(vNode) {
-        console.log(vNode.ref);
-        // this._textarea.apply()
+    _handleEditorFocus(oldVTree) {
+        console.log(this._textarea.list.node);
+        // this._textarea.apply(
+        //     this._textarea.list.node,
+        //     vNode,
+        //     true
+        // );
     }
 
     /**

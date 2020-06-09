@@ -1,4 +1,5 @@
 import { createElement } from "./vdom";
+import { deepClone } from "../utils";
 
 /**
  * This is not your typical vpatch, we know the structure of our virtual tree
@@ -29,4 +30,8 @@ export default function ($parent, newVTree, oldVTree, opts) {
     if (newVTree.children.length > oldVTree.children.length) {
         addNode();
     }
+}
+
+export function vTreeSnapshot(vTree) {
+    return deepClone(vTree);
 }
