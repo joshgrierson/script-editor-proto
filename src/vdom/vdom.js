@@ -1,11 +1,20 @@
 import { hyphenate } from "../utils";
 
-export function createElement(vNode, eventMap) {
+/**
+ * Creates a dom element and possible child nodes.
+ * Will create dom element ref on vNode if vNode matches createRefCond
+ * @param {VNode} vNode 
+ * @param {Map} eventMap 
+ * @param {Map} createRefCond 
+ */
+export function createElement(vNode, eventMap, createRefCond) {
     if (typeof vNode == "string") {
         return document.createTextNode(vNode);
     }
 
     const $el = document.createElement(vNode.nodeName);
+
+    $el.setAttribute("v-id", vNode.id);
 
     if (vNode.attrs) {
         const attrKeys = Object.keys(vNode.attrs);
@@ -22,13 +31,17 @@ export function createElement(vNode, eventMap) {
     if (vNode.children.length) {
         vNode.children.forEach(function(child) {
             $el.appendChild(
-                createElement(child)
+                createElement(child, eventMap, createRefCond)
             );
         });
     }
 
     if (vNode.nativeEvents && eventMap) {
         registerEvents($el, vNode, eventMap);
+    }
+
+    if (createRefCond && vNode[createRefCond.key] === createRefCond.value) {
+        vNode.ref = $el;
     }
 
     return $el;

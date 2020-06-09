@@ -66,7 +66,8 @@ export default class Editor {
      * @param {VNode} vNode
      */
     _handleEditorFocus(vNode) {
-        console.log(vNode);
+        console.log(vNode.ref);
+        // this._textarea.apply()
     }
 
     /**

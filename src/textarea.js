@@ -1,5 +1,5 @@
 import VNode from "./vdom/vnode";
-import { createElement } from "./vdom/vdom";
+import patch from "./vdom/vpatch";
 import defineReactive from "./observer/reactive";
 
 export default class TextArea {
@@ -57,9 +57,19 @@ export default class TextArea {
         this.list.addNode(vLineNode.addNode(text));
     }
 
-    apply($root) {
-        $root.appendChild(
-            createElement(this.root.node, this._eventMap)
-        );
+    apply($root, isListNodes) {
+        const parentElement = isListNodes ? this.list.node : this.root.node;
+        const opts = {
+            eventMap: this._eventMap
+        };
+
+        if (!isListNodes) {
+            opts.createRefCond = {
+                key: "id",
+                value: this.list.node.id
+            };
+        }
+
+        patch($root, parentElement, null, opts);
     }
 }

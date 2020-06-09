@@ -4,6 +4,7 @@ export default class VNode {
     constructor(props) {
         this._props = {
             id: genUuid(),
+            ref: null,
             nodeName: props.nodeName,
             attrs: props.attrs,
             nativeEvents: [],
