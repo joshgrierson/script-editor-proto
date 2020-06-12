@@ -34,5 +34,26 @@ describe("VDom", () => {
             expect(domElement.hasChildNodes()).toBe(true);
             expect(domElement.firstChild.classList[0]).toBeDefined();
         });
+
+        it("should create element ref on child vnode based on ref condition", () => {
+            const vNode = new VNode({
+                nodeName: "ol"
+            });
+
+            vNode.addNode(new VNode({
+                nodeName: "li"
+            }));
+
+            const domElement = createElement(vNode.node, [
+                {
+                    key: "nodeName",
+                    value: "li"
+                }
+            ]);
+
+            expect(domElement.hasChildNodes()).toBe(true);
+            expect(vNode.node.children[0].ref).toBeDefined();
+            expect(vNode.node.children[0].ref.nodeName).toBe("LI");
+        });
     });
 });
