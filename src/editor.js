@@ -2,6 +2,7 @@ import { findElement, log } from "./utils";
 import TextArea from "./textarea";
 import Observer from "./observer";
 import defineReactive, { removeReactive } from "./observer/reactive";
+import Batch from "./batch";
 
 /**
  * Entry point for script-edtior component.
@@ -21,6 +22,8 @@ export default class Editor {
             this._observer,
             this._listeners
         );
+
+        this._batch = new Batch();
     }
 
     mount(element) {
@@ -48,13 +51,14 @@ export default class Editor {
     }
 
     _initState() {
-        const lines = [0, 1, 2];
+        const lines = [0, 1, 2, 3, 4, 5, 6, 7];
 
         for(let i = 0; i < lines.length; i++) {
             defineReactive({
                 data: this._data,
                 key: lines[i],
-                observer: this._observer
+                observer: this._observer,
+                batch: this._batch
             });
 
             this._data[i] = "";

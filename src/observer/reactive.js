@@ -10,7 +10,7 @@ const cache = {};
  * @param {string|number} key
  * @param {Observer} observer
  */
-export default function defineReactive({ data, key, observer }) {
+export default function defineReactive({ data, key, observer, batch }) {
     Object.defineProperty(data, key, {
         enumerable: true,
         configurable: true,
@@ -18,6 +18,7 @@ export default function defineReactive({ data, key, observer }) {
             return cache[key];
         },
         set(val) {
+            batch.add({ key, val });
             observer.notify("state-change", val);
             cache[key] = val;
         }

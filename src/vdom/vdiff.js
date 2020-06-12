@@ -11,7 +11,6 @@ export default function (newVNode, oldVNode, hint) {
     if (hint || hint == 0) {
         const newVChildNode = newVNode.children[hint];
         const oldVChildNode = oldVNode.children[hint];
-        console.log(newVChildNode, oldVChildNode);
 
         if (!oldVChildNode) {
             diffTree.push({
