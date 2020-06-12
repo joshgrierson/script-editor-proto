@@ -44,6 +44,11 @@ export function createElement(vNode, createRefCond) {
     return $el;
 }
 
+/**
+ * Register's native events on dom elements,
+ * and notify's subscribers on the observer when event fired
+ * @param {object} param0 
+ */
 export function registerEvents({ $node, vNode, observer, listeners }) {
     if (!listeners[vNode.id] && vNode.nativeEvents) {
         vNode.nativeEvents.forEach(function(event) {

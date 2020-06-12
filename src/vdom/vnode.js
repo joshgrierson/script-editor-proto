@@ -1,5 +1,9 @@
 import { genUuid } from "../utils";
 
+/**
+ * VNode object
+ * Use for creating virtual dom node stored in memory
+ */
 export default class VNode {
     constructor(props) {
         this._props = {

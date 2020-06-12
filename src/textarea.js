@@ -3,6 +3,10 @@ import patch, { vTreeSnapshot } from "./vdom/vpatch";
 import diff from "./vdom/vdiff";
 import { registerEvents } from "./vdom/vdom";
 
+/**
+ * TextArea object for rendering text area and child nodes,
+ * aswell as handling updates to them.
+ */
 export default class TextArea {
     constructor(data, cache, observer, listeners) {
         this.root = null;

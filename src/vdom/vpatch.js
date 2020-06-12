@@ -1,5 +1,5 @@
 import { createElement } from "./vdom";
-import { deepClone, log } from "../utils";
+import { log } from "../utils";
 import { cloneDeep } from "lodash";
 
 /**
@@ -30,15 +30,25 @@ export default function ($parent, diffTree, createRefCond) {
         }
     };
 
+    const replaceNode = (diff) => {
+        $parent.replaceChild(diff.vNode.ref, diff.oldVNode.ref);
+    };
+
     while(i--) {
         if (diffTree[i].action == "add") {
             addNode(diffTree[i]);
         } else if (diffTree[i].action == "remove") {
             removeNode(diffTree[i]);
+        } else if (diffTree[i].action == "replace") {
+            replaceNode(diffTree[i]);
         }
     }
 }
 
+/**
+ * Deep clones VTree
+ * @param {VNode} vTree
+ */
 export function vTreeSnapshot(vTree) {
     return cloneDeep(vTree);
 }

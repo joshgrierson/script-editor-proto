@@ -3,6 +3,9 @@ import TextArea from "./textarea";
 import Observer from "./observer";
 import defineReactive, { removeReactive } from "./observer/reactive";
 
+/**
+ * Entry point for script-edtior component.
+ */
 export default class Editor {
     constructor(options) {
         this._root = null;
@@ -45,13 +48,17 @@ export default class Editor {
     }
 
     _initState() {
-        defineReactive({
-            data: this._data,
-            key: 0,
-            observer: this._observer
-        });
+        const lines = [0, 1, 2];
 
-        this._data[0] = "";
+        for(let i = 0; i < lines.length; i++) {
+            defineReactive({
+                data: this._data,
+                key: lines[i],
+                observer: this._observer
+            });
+
+            this._data[i] = "";
+        }
     }
 
     _registerObservables() {

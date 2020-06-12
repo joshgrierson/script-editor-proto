@@ -1,3 +1,7 @@
+/**
+ * Observer using pub/sub pattern,
+ * handles subscribing to an event and notifying the subscribers.
+ */
 export default class Observer {
     constructor() {
         this._observers = {};
