@@ -1,19 +1,17 @@
 import VNode from "./vdom/vnode";
 import patch, { vTreeSnapshot } from "./vdom/vpatch";
+import diff from "./vdom/vdiff";
 import defineReactive from "./observer/reactive";
+import { registerEvents } from "./vdom/vdom";
 
 export default class TextArea {
-    constructor(data, cache, observer) {
+    constructor(data, cache, observer, listeners) {
         this.root = null;
         this.list = null;
-        this._eventMap = {};
         this._data = data;
         this._cache = cache;
         this._observer = observer;
-    }
-
-    mapEvents(eventMap) {
-        this._eventMap = eventMap;
+        this._listeners = listeners;
     }
 
     createVNodes() {
@@ -23,7 +21,7 @@ export default class TextArea {
                 contenteditable: true,
                 class: "c-textbox"
             },
-            nativeEvents: Object.keys(this._eventMap)
+            nativeEvents: ["focus"]
         });
 
         this.list = new VNode({
@@ -38,6 +36,9 @@ export default class TextArea {
 
     addTextLine(text) {
         const nextIdx = this.list.node.children.length;
+
+        const oldVList = vTreeSnapshot(this.list.node);
+
         const vLineNode = new VNode({
             nodeName: "li",
             attrs: {
@@ -55,26 +56,31 @@ export default class TextArea {
         this._data[nextIdx] = text;
 
         this.list.addNode(vLineNode.addNode(text));
+
+        const patches = diff(this.list.node, oldVList, nextIdx);
+        
+        patch(this.list.node.ref, patches);
     }
 
-    apply($root, isListNodes) {
-        const vTree = vTreeSnapshot(
-            isListNodes
-            ? this.list.node
-            : this.root.node
-        );
+    apply($root) {
+        const patches = diff(this.root.node);
 
-        const opts = {
-            eventMap: this._eventMap
-        };
-
-        if (!isListNodes) {
-            opts.createRefCond = {
+        patch($root, patches, [
+            {
+                key: "id",
+                value: this.root.node.id
+            },
+            {
                 key: "id",
                 value: this.list.node.id
-            };
-        }
+            }
+        ]);
 
-        patch($root, vTree, null, opts);
+        registerEvents({
+            $node: this.root.node.ref,
+            vNode: this.root.node,
+            observer: this._observer,
+            listeners: this._listeners
+        });
     }
 }

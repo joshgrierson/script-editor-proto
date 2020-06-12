@@ -1,13 +1,12 @@
-import { hyphenate } from "../utils";
+import { hyphenate, log } from "../utils";
 
 /**
  * Creates a dom element and possible child nodes.
  * Will create dom element ref on vNode if vNode matches createRefCond
  * @param {VNode} vNode 
- * @param {Map} eventMap 
- * @param {Map} createRefCond 
+ * @param {Map[]} createRefCond 
  */
-export function createElement(vNode, eventMap, createRefCond) {
+export function createElement(vNode, createRefCond) {
     if (typeof vNode == "string") {
         return document.createTextNode(vNode);
     }
@@ -31,26 +30,38 @@ export function createElement(vNode, eventMap, createRefCond) {
     if (vNode.children.length) {
         vNode.children.forEach(function(child) {
             $el.appendChild(
-                createElement(child, eventMap, createRefCond)
+                createElement(child, createRefCond)
             );
         });
     }
 
-    if (vNode.nativeEvents && eventMap) {
-        registerEvents($el, vNode, eventMap);
-    }
-
-    if (createRefCond && vNode[createRefCond.key] === createRefCond.value) {
-        vNode.ref = $el;
+    if (createRefCond) {
+        if (createRefCond.find((refCond) => vNode[refCond.key] === refCond.value)) {
+            vNode.ref = $el;
+        }
     }
 
     return $el;
 }
 
-function registerEvents($el, vNode, eventMap) {
-    vNode.nativeEvents.forEach(function(event) {
-        if (eventMap[event]) {
-            $el.addEventListener(event, (ev) => eventMap[event](vNode, ev));
-        }
-    });
+export function registerEvents({ $node, vNode, observer, listeners }) {
+    if (!listeners[vNode.id] && vNode.nativeEvents) {
+        vNode.nativeEvents.forEach(function(event) {
+            $node.addEventListener(event, (ev) => observer.notify(`editor-${event}`, {
+                vNode,
+                ev
+            }));
+            
+            if (!listeners[vNode.id]) {
+                listeners[vNode.id] = [];
+            }
+
+            listeners[vNode.id].push(event);
+        });
+    } else {
+        log(`Event(s) [${vNode.nativeEvents.join()}] on node ${vNode.nodeName} already registered`,
+            LIB_TAG,
+            "warn"
+        );
+    }
 }

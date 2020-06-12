@@ -9,12 +9,14 @@ export default class Editor {
 
         this._data = {};
         this._cache = {};
+        this._listeners = {};
 
         this._observer = new Observer();
         this._textarea = new TextArea(
             this._data,
             this._cache,
-            this._observer
+            this._observer,
+            this._listeners
         );
     }
 
@@ -36,9 +38,6 @@ export default class Editor {
         this._registerObservables();
 
         // create some nodes for textarea
-        this._textarea.mapEvents({
-            "focus": (vNode, ev) => this._observer.notify("editor-focus", vNode)
-        });
         this._textarea.createVNodes();
         this._textarea.apply(this._root);
 
@@ -65,8 +64,8 @@ export default class Editor {
      * Invoked on editor focus event
      * @param {VNode} vNode
      */
-    _handleEditorFocus(oldVTree) {
-        console.log(this._textarea.list.node);
+    _handleEditorFocus(vNode, ev) {
+        console.log(this._data);
         // this._textarea.apply(
         //     this._textarea.list.node,
         //     vNode,
@@ -79,9 +78,7 @@ export default class Editor {
      * @param {any} value 
      */
     _handleStateChange(value) {
-        if (isDev()) {
-            console.info("State change: %s", value);
-        }
+        console.info("State change: %s", value);
     }
 
     _invalidateMountElement(el) {

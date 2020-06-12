@@ -1,3 +1,5 @@
+export const LIB_TAG = "Script Editor v1";
+
 export function genUuid() {
     let date = new Date().getTime();
     
@@ -25,6 +27,10 @@ export function findElement(query, $root) {
 }
 
 export function log(msg, tag, type) {
+    if (!isDev() && type != "error") {
+        return;
+    }
+
     type = type || "info";
     let msgString = msg;
 
