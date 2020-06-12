@@ -1,7 +1,6 @@
 import VNode from "./vdom/vnode";
 import patch, { vTreeSnapshot } from "./vdom/vpatch";
 import diff from "./vdom/vdiff";
-import defineReactive from "./observer/reactive";
 import { registerEvents } from "./vdom/vdom";
 
 export default class TextArea {
@@ -46,35 +45,26 @@ export default class TextArea {
             }
         });
 
-        defineReactive({
-            data: this._data,
-            key: nextIdx,
-            observer: this._observer,
-            cache: this._cache
-        });
-
-        this._data[nextIdx] = text;
-
         this.list.addNode(vLineNode.addNode(text));
 
         const patches = diff(this.list.node, oldVList, nextIdx);
         
-        patch(this.list.node.ref, patches);
+        patch(this.list.node.ref, patches, "all");
+    }
+
+    removeTextLine(idx) {
+        const oldVList = vTreeSnapshot(this.list.node);
+
+        this.list.removeNode(idx);
+
+        patch(this.list.node.ref,
+            diff(this.list.node, oldVList, idx));
     }
 
     apply($root) {
         const patches = diff(this.root.node);
 
-        patch($root, patches, [
-            {
-                key: "id",
-                value: this.root.node.id
-            },
-            {
-                key: "id",
-                value: this.list.node.id
-            }
-        ]);
+        patch($root, patches, "all");
 
         registerEvents({
             $node: this.root.node.ref,

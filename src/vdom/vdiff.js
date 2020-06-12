@@ -10,6 +10,11 @@ export default function (newVNode, oldVNode, hint) {
                 action: "add",
                 vNode: newVChildNode
             });
+        } else if (!newVChildNode) {
+            diffTree.push({
+                action: "remove",
+                vNode: oldVChildNode
+            });
         }
     } else if (!oldVNode) {
         diffTree.push({

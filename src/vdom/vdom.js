@@ -36,7 +36,7 @@ export function createElement(vNode, createRefCond) {
     }
 
     if (createRefCond) {
-        if (createRefCond.find((refCond) => vNode[refCond.key] === refCond.value)) {
+        if (createRefCond == "all" || createRefCond.find((refCond) => vNode[refCond.key] === refCond.value)) {
             vNode.ref = $el;
         }
     }
@@ -59,9 +59,6 @@ export function registerEvents({ $node, vNode, observer, listeners }) {
             listeners[vNode.id].push(event);
         });
     } else {
-        log(`Event(s) [${vNode.nativeEvents.join()}] on node ${vNode.nodeName} already registered`,
-            LIB_TAG,
-            "warn"
-        );
+        log(`Event(s) [${vNode.nativeEvents.join()}] on node ${vNode.nodeName} already registered`, "warn");
     }
 }

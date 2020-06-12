@@ -29,6 +29,14 @@ export default class VNode {
         return this;
     }
 
+    removeNode(idx) {
+        if (this._props.children[idx]) {
+            this._props.children.splice(idx, 1);
+        }
+
+        return this;
+    }
+
     get node() {
         return this._props;
     }

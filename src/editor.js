@@ -1,11 +1,11 @@
-import { findElement, log, isDev } from "./utils";
+import { findElement, log } from "./utils";
 import TextArea from "./textarea";
 import Observer from "./observer";
+import defineReactive, { removeReactive } from "./observer/reactive";
 
 export default class Editor {
     constructor(options) {
         this._root = null;
-        this._tag = "Script Editor v1";
 
         this._data = {};
         this._cache = {};
@@ -28,7 +28,7 @@ export default class Editor {
 
             this._setup();
         } catch (ex) {
-            log(ex, this._tag);
+            log(ex);
         }
     }
 
@@ -45,7 +45,13 @@ export default class Editor {
     }
 
     _initState() {
-        this._textarea.addTextLine("");
+        defineReactive({
+            data: this._data,
+            key: 0,
+            observer: this._observer
+        });
+
+        this._data[0] = "";
     }
 
     _registerObservables() {
@@ -65,12 +71,11 @@ export default class Editor {
      * @param {VNode} vNode
      */
     _handleEditorFocus(vNode, ev) {
-        console.log(this._data);
-        // this._textarea.apply(
-        //     this._textarea.list.node,
-        //     vNode,
-        //     true
-        // );
+        removeReactive({
+            data: this._data,
+            key: 0,
+            observer: this._observer
+        });
     }
 
     /**
@@ -78,7 +83,13 @@ export default class Editor {
      * @param {any} value 
      */
     _handleStateChange(value) {
-        console.info("State change: %s", value);
+        console.info("State change");
+
+        if (typeof value == "string") {
+            this._textarea.addTextLine(value);
+        } else if (typeof value == "object" && value.deleted) {
+            this._textarea.removeTextLine(0);
+        }
     }
 
     _invalidateMountElement(el) {

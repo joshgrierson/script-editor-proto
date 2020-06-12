@@ -26,7 +26,7 @@ export function findElement(query, $root) {
     return found;
 }
 
-export function log(msg, tag, type) {
+export function log(msg, type) {
     if (!isDev() && type != "error") {
         return;
     }
@@ -39,9 +39,7 @@ export function log(msg, tag, type) {
         msgString = msg.stack;
     }
 
-    if (tag) {
-        msgString = `[${tag}]: ${msgString}`;
-    }
+    msgString = `[${LIB_TAG}]: ${msgString}`;
 
     console[type](msgString);
 }
