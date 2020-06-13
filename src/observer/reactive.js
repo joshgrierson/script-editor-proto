@@ -1,5 +1,33 @@
 const cache = {};
 
+// out scope vars for handling batch of updates
+let promise = null;
+let datavalues = {};
+
+/**
+ * Send data through in a batch.
+ * Data is collected into a batch synchronously and executed on event-loop
+ * @param {any} data 
+ * @param {Observer} observer 
+ */
+function batch(data, observer) {
+    datavalues[data.key] = {
+        key: data.key,
+        val: data.val
+    };
+
+    if (!promise) {
+        promise = new Promise((resolve) => resolve(datavalues));
+        promise.then((values) => {
+            observer.notify("state-change", values);
+
+            // reset our vars back to null and empty values
+            datavalues = {};
+            promise = null;
+        });
+    }
+};
+
 /**
  * Define reactive property on data map,
  * when setter is triggered this will notify any subscribers on the observer dep.
@@ -10,7 +38,7 @@ const cache = {};
  * @param {string|number} key
  * @param {Observer} observer
  */
-export default function defineReactive({ data, key, observer, batch }) {
+export default function defineReactive({ data, key, observer }) {
     Object.defineProperty(data, key, {
         enumerable: true,
         configurable: true,
@@ -18,8 +46,7 @@ export default function defineReactive({ data, key, observer, batch }) {
             return cache[key];
         },
         set(val) {
-            batch.add({ key, val });
-            observer.notify("state-change", val);
+            batch({ key, val }, observer);
             cache[key] = val;
         }
     });

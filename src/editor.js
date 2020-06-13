@@ -2,7 +2,7 @@ import { findElement, log } from "./utils";
 import TextArea from "./textarea";
 import Observer from "./observer";
 import defineReactive, { removeReactive } from "./observer/reactive";
-import Batch from "./batch";
+import keyevent from "./keyevent";
 
 /**
  * Entry point for script-edtior component.
@@ -23,7 +23,11 @@ export default class Editor {
             this._listeners
         );
 
-        this._batch = new Batch();
+        this._pastKeyTime = null;
+        this._keyTimer = null;
+        this._chars = "";
+        this._maxKeyDelta = 250;
+        this._keyTimerMs = 300;
     }
 
     mount(element) {
@@ -51,24 +55,24 @@ export default class Editor {
     }
 
     _initState() {
-        const lines = [0, 1, 2, 3, 4, 5, 6, 7];
+        defineReactive({
+            data: this._data,
+            key: 0,
+            observer: this._observer
+        });
 
-        for(let i = 0; i < lines.length; i++) {
-            defineReactive({
-                data: this._data,
-                key: lines[i],
-                observer: this._observer,
-                batch: this._batch
-            });
-
-            this._data[i] = "";
-        }
+        this._data[0] = "";
     }
 
     _registerObservables() {
         this._observer.subscribe(
             "editor-focus",
             this._handleEditorFocus.bind(this)
+        );
+
+        this._observer.subscribe(
+            "editor-keydown",
+            this._handleEditorKeydown.bind(this)
         );
 
         this._observer.subscribe(
@@ -79,28 +83,67 @@ export default class Editor {
 
     /**
      * Invoked on editor focus event
-     * @param {VNode} vNode
+     * @param {VNode, Event} param0
      */
-    _handleEditorFocus(vNode, ev) {
-        removeReactive({
-            data: this._data,
-            key: 0,
-            observer: this._observer
-        });
+    _handleEditorFocus({ vNode, ev }) {
+        
+    }
+
+    /**
+     * Invoked on editor keydown event
+     * @param {VNode, Event} param0 
+     */
+    _handleEditorKeydown({ vNode, ev }) {
+        const keyE = keyevent(ev);
+
+        if (!this._data[0] && keyE.key == "backspace") {
+            ev.preventDefault();
+        }
+
+        if (keyE.key == "key") {
+            this._chars += keyE.val;
+
+            const reset = () => {
+                this._keyTimer = null;
+                this._pastKeyTime = null;
+                this._chars = "";
+            };
+
+            if (!this._pastKeyTime) {
+                this._pastKeyTime = Date.now();
+            }
+
+            const delta = (Date.now() - this._pastKeyTime);
+            console.log("Delta %dms", delta);
+
+            if (!this._keyTimer) {
+                this._keyTimer = setTimeout(() => {
+                    this._data[0] = this._chars;
+                    // log("Data set based on timer func");
+    
+                    reset();
+                }, this._keyTimerMs);
+            }
+        }
     }
 
     /**
      * Invoked on state change
-     * @param {any} value 
+     * @param {any} value
      */
     _handleStateChange(value) {
         console.info("State change");
+        const keys = Object.keys(value);
 
-        if (typeof value == "string") {
-            this._textarea.addTextLine(value);
-        } else if (typeof value == "object" && value.deleted) {
-            this._textarea.removeTextLine(0);
-        }
+        keys.forEach((key) => {
+            const pick = value[key];
+
+            if (this._data[pick.key]) {
+                this._textarea.updateTextLine(pick.val);
+            } else {
+                this._textarea.addTextLine(pick.val);
+            }
+        });
     }
 
     _invalidateMountElement(el) {
