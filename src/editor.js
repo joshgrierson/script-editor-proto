@@ -3,6 +3,7 @@ import TextArea from "./textarea";
 import Observer from "./observer";
 import defineReactive, { removeReactive } from "./observer/reactive";
 import keyevent from "./keyevent";
+import VNode from "./vdom/vnode";
 
 /**
  * Entry point for script-edtior component.
@@ -22,6 +23,8 @@ export default class Editor {
             this._observer,
             this._listeners
         );
+
+        this._document = {};
 
         this._pastKeyTime = null;
         this._keyTimer = null;
@@ -71,6 +74,11 @@ export default class Editor {
         );
 
         this._observer.subscribe(
+            "editor-click",
+            this._handleEditorClick.bind(this)
+        );
+
+        this._observer.subscribe(
             "editor-keydown",
             this._handleEditorKeydown.bind(this)
         );
@@ -82,12 +90,19 @@ export default class Editor {
     }
 
     /**
+     * Invoked on editor click event
+     * @param {VNode, Event} param0 
+     */
+    _handleEditorClick({ vNode, ev }) {
+        const ref = this._textarea.root.node.ref;
+        const selection = document.getSelection();
+    }
+
+    /**
      * Invoked on editor focus event
      * @param {VNode, Event} param0
      */
-    _handleEditorFocus({ vNode, ev }) {
-        
-    }
+    _handleEditorFocus({ vNode, ev }) {}
 
     /**
      * Invoked on editor keydown event
@@ -95,35 +110,33 @@ export default class Editor {
      */
     _handleEditorKeydown({ vNode, ev }) {
         const keyE = keyevent(ev);
+        const range = document.getSelection().getRangeAt(0);
 
-        if (!this._data[0] && keyE.key == "backspace") {
+        const delay = () => {
+            if (!this._keyTimer) {
+                this._keyTimer = setTimeout(() => {
+                    this._data[0] = range.startContainer.parentElement.innerText;
+                    this._keyTimer = null;
+                    this._pastKeyTime = null;
+                }, this._keyTimerMs);
+            }
+        };
+
+        if ((!this._data[0] || this._data[0].length == 0) && keyE.key == "backspace") {
             ev.preventDefault();
+        } else if (keyE.key == "backspace") {
+            delay();
         }
 
         if (keyE.key == "key") {
-            this._chars += keyE.val;
-
-            const reset = () => {
-                this._keyTimer = null;
-                this._pastKeyTime = null;
-                this._chars = "";
-            };
-
             if (!this._pastKeyTime) {
                 this._pastKeyTime = Date.now();
             }
 
             const delta = (Date.now() - this._pastKeyTime);
-            console.log("Delta %dms", delta);
+            log(`Delta ${delta}ms`);
 
-            if (!this._keyTimer) {
-                this._keyTimer = setTimeout(() => {
-                    this._data[0] = this._chars;
-                    // log("Data set based on timer func");
-    
-                    reset();
-                }, this._keyTimerMs);
-            }
+            delay();
         }
     }
 

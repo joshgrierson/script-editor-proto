@@ -24,7 +24,7 @@ export default class TextArea {
                 contenteditable: true,
                 class: "c-textbox"
             },
-            nativeEvents: ["focus", "keydown"]
+            nativeEvents: ["focus", "click", "keydown"]
         });
 
         this.list = new VNode({
@@ -57,7 +57,7 @@ export default class TextArea {
     }
 
     updateTextLine(text) {
-        console.log("update me with: %s", text);
+        // console.log("update me with: %s", text);
     }
 
     removeTextLine(idx) {
