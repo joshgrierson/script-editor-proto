@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "hyperscript": "^2.0.2",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "typedi": "^0.8.0"
   },
   "devDependencies": {
